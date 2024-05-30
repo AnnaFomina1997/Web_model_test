@@ -1,6 +1,6 @@
 # Blockchain platform - Multivisual
 
-BackEnd + DB
+This part of the project is responsible for BackEnd + DB
 
 
 ## Running the project
