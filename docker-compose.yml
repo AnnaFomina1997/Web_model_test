@@ -1,0 +1,28 @@
+# Определение версии Docker Compose и начало описания сервисов
+version: '3.4'
+
+services:
+  pgdb:
+    # Использование готового образа postgres
+    image: postgres:latest
+    # Задание переменных окружения для контейнера с postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+     # Задание имени контейнера для сервиса pgdb
+    container_name: misis-pgdb
+     # Связывание тома с директорией в контейнере для сохранения данных postgres
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+    networks:
+      - misis-backend-tier
+    ports:
+      - 5002:5432
+
+volumes:
+  pgdbdata: null
+
+networks:
+  misis-backend-tier:
+    driver: bridge

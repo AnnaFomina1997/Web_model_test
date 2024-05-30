@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Image Generator</title>
+    <style>
+        /* Add basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #prompt-form {
+            margin-bottom: 20px;
+        }
+
+        #generated-image {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>Generate an Image</h1>
+
+<form id="prompt-form" action="/generate" method="POST">
+    <label for="prompt">Enter a prompt:</label>
+    <input type="text" id="prompt" name="prompt" required>
+    <button type="submit">Generate</button>
+</form>
+
+<div id="generated-image">
+    <img id="output-image" src="" alt="Generated Image" style="display: none;">
+</div>
+
+<script>
+    document.getElementById("prompt-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        fetch('/generate', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const outputImage = document.getElementById("output-image");
+                outputImage.src = url;
+                outputImage.style.display = "block";
+            });
+    });
+</script>
+</body>
+</html>
