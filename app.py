@@ -177,9 +177,11 @@ def update_balance_after_transaction():
         return jsonify({'success': False, 'message': 'User not found'}), 404
 
     # Период ожидания в секундах и количество попыток
-    wait_time = 30
+    wait_time = 15
     max_retries = 12
     last_event_id = None
+    skip = 1
+    passt = False
 
     for attempt in range(max_retries):
         url = f"{TONAPI_BASE_URL}/accounts/{user_id}/jettons/{token_id}/history?limit=100&start_date={start_date}&end_date={end_date}"
@@ -187,30 +189,39 @@ def update_balance_after_transaction():
         try:
             response = requests.get(url, headers=TONAPI_HEADERS)
             response.raise_for_status()  # Raise an exception for HTTP errors
-            logging.debug(f"Headers: {response.json()}")
 
             events = response.json().get('events', [])
             logging.debug(f"Received events: {events}")
 
             if events:
                 latest_event = events[0]
-                logging.debug(f"Processing latest event: {latest_event}")
+                logging.debug(f"Processing latest event: {latest_event['event_id']}")
 
                 if last_event_id is None:
                     last_event_id = latest_event['event_id']
                 elif last_event_id != latest_event['event_id']:
-                    for action in latest_event.get('actions', []):
-                        if action['type'] == 'JettonTransfer' and action['status'] == 'ok':
-                            jetton_transfer = action['JettonTransfer']
-                            transaction_amount = int(jetton_transfer['amount'])
-                            user.account_balance += transaction_amount / 1e9  # Assuming the amount is in nanocoins
-                            db.session.commit()
-                            logging.info(f"Updated user balance: {user.account_balance}")
-                            return jsonify(
-                                {'success': True, 'message': 'Balance updated', 'new_balance': user.account_balance})
+                    if skip == 1:
+                        time.sleep(wait_time)
+                        passt = True
+                        skip = 0
+                        continue
 
-                    logging.error("No successful JettonTransfer action found")
-                    return jsonify({'success': False, 'message': 'No successful JettonTransfer action found'}), 404
+                if passt:
+                    logging.debug(latest_event)
+                    if latest_event["actions"][0]["status"] == 'ok':
+                        jetton_transfer = latest_event["actions"][0]['JettonTransfer']
+                        transaction_amount = int(jetton_transfer['amount'])
+                        user.account_balance += transaction_amount / 1e9  # Assuming the amount is in nanocoins
+                        db.session.commit()
+                        logging.info(f"Updated user balance: {user.account_balance}")
+                        return jsonify(
+                            {'success': True, 'message': 'Balance updated', 'new_balance': user.account_balance})
+                    else:
+                        logging.error("No successful JettonTransfer action found")
+                        return jsonify({'success': False, 'message': 'No successful JettonTransfer action found'}), 404
+
+                # Reset passt after processing
+                passt = False
 
         except requests.RequestException as e:
             logging.error(f"Request error: {e}")
@@ -221,7 +232,6 @@ def update_balance_after_transaction():
 
     logging.error(f"Failed to fetch new transaction after {max_retries} attempts")
     return jsonify({'success': False, 'message': 'Failed to fetch new transaction'}), 404
-
 
 
 if __name__ == '__main__':
