@@ -1,11 +1,11 @@
 # Blockchain platform - Multivisual
 
-This part of the project is responsible for BackEnd + DB.
+Эта часть проекта отвечает за  BackEnd + DB.
 
-Link for FrontEnd + SmartContracts: https://github.com/AnnaFomina1997/ton-dapp-test
+Ссылка на FrontEnd + SmartContracts: https://github.com/AnnaFomina1997/ton-dapp-test
 
 
-## Running the project
+##  Запуск проекта
 
 1. 
 pip install -r requirements.txt
