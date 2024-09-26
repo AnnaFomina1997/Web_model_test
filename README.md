@@ -1,5 +1,7 @@
 # Blockchain platform - Multivisual
 
+Командная работа студентов НИТУ МИСИС
+
 Эта часть проекта отвечает за  BackEnd + DB.
 
 Ссылка на FrontEnd + SmartContracts: https://github.com/AnnaFomina1997/ton-dapp-test
